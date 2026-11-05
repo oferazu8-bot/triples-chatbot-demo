@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+*.pyc
+data/*.db
+data/outbox/*.json
+.DS_Store
