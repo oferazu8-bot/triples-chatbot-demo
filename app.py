@@ -103,9 +103,12 @@ def normalize_phone(raw: str) -> str:
 
 def match_faq(text: str) -> str | None:
     t = text.strip().lower()
+    # light stemming for Hebrew construct forms (אגירת→אגירה)
+    t_norm = t.replace("אגירת", "אגירה").replace("סולארית", "סולארי").replace("סולאריות", "סולארי")
     for item in KB["faqs"]:
         for kw in item["q"]:
-            if kw.lower() in t:
+            k = kw.lower()
+            if k in t or k in t_norm:
                 return item["a"]
     return None
 
