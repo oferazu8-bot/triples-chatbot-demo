@@ -317,12 +317,23 @@ def admin_leads():
 @app.get("/widget.js")
 def widget_js():
     """Single-script embeddable floating chat bubble."""
-    base = request.url_root.rstrip("/")
+    # Prefer HTTPS when behind Railway proxy; fall back to same-origin relative paths.
+    proto = request.headers.get("X-Forwarded-Proto", request.scheme)
+    host = request.headers.get("X-Forwarded-Host") or request.host
+    base = f"{proto}://{host}".rstrip("/")
+    if proto == "http" and "railway.app" in host:
+        base = "https://" + host
     js = f"""
 (function(){{
   if (window.__TSS_CHAT_LOADED) return;
   window.__TSS_CHAT_LOADED = true;
-  var BASE = {json.dumps(base)};
+  var BASE = (function(){{
+    try {{
+      var s = document.currentScript && document.currentScript.src;
+      if (s) return new URL(s).origin;
+    }} catch (e) {{}}
+    return {json.dumps(base)};
+  }})();
   var cfg = window.TripleSChat || {{}};
   var site = cfg.site || document.currentScript && document.currentScript.getAttribute('data-site') || 'solar';
   var primary = site === 'storage' ? '#0ea5e9' : '#f59e0b';
