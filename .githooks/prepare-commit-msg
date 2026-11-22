@@ -1,0 +1,17 @@
+#!/bin/sh
+# Append Claude Code trailers to commit messages when they are missing.
+# Installed as prepare-commit-msg. Safe to re-run; will not duplicate.
+msg_file="$1"
+[ -n "$msg_file" ] && [ -f "$msg_file" ] || exit 0
+
+# Skip empty / commented-out messages; git will abort those anyway.
+if ! grep -qE '^[^#]' "$msg_file" 2>/dev/null; then
+  exit 0
+fi
+
+if ! grep -qF "Co-Authored-By: Claude <noreply@anthropic.com>" "$msg_file"; then
+  printf '\nCo-Authored-By: Claude <noreply@anthropic.com>\n' >> "$msg_file"
+fi
+if ! grep -qF "Generated-With: Claude Code" "$msg_file"; then
+  printf 'Generated-With: Claude Code\n' >> "$msg_file"
+fi
